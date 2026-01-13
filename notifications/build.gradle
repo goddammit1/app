@@ -1,0 +1,22 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Понижаем до 4.2.1 (как у вас было), но добавляем Google Services
+        classpath "com.android.tools.build:gradle:4.2.1"
+        classpath 'com.google.gms:google-services:4.3.15'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
