@@ -200,6 +200,102 @@ public class RemoteUsers {
         }
     }
 
+    // ---------- Presence (reconnect-aware) ----------
+    //
+    // Why this exists:
+    //
+    // setOnline(login, true) is fire-and-forget: it writes "online=true"
+    // and registers an onDisconnect() that flips the value to "false"
+    // when the socket dies on the Firebase side. That handles the
+    // "user goes offline" case (network loss, app killed, VPN toggle,
+    // etc), but NOTHING flips the value back to true once the socket
+    // reconnects. Result: after any network change the user stays
+    // "offline" until they manually re-open the app.
+    //
+    // Firebase provides a special read-only path ".info/connected"
+    // that emits true/false every time the client's realtime socket
+    // connects or disconnects. By listening to it we can:
+    //   1) re-arm the onDisconnect() handler on every reconnect, and
+    //   2) immediately re-write online=true.
+    //
+    // Always pair attachPresence() with detachPresence() on the same
+    // login when the owning component is torn down (e.g. service
+    // onDestroy, or logout).
+
+    private static DatabaseReference sPresenceConnRef;
+    private static ValueEventListener sPresenceListener;
+    private static DatabaseReference sPresenceOnlineRef;
+    private static String sPresenceLogin;
+
+    /**
+     * Start tracking presence for the given login. Safe to call multiple
+     * times - if presence is already attached for the same login this is
+     * a no-op, otherwise the previous binding is detached first.
+     */
+    public static synchronized void attachPresence(final String login) {
+        if (login == null || login.isEmpty()) return;
+        if (login.equals(sPresenceLogin) && sPresenceListener != null) {
+            return; // already attached for this user
+        }
+        detachPresence();
+
+        sPresenceLogin = login;
+        sPresenceOnlineRef = usersRef().child(login).child("online");
+        sPresenceConnRef = db().getReference(".info/connected");
+
+        sPresenceListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Boolean connected = snapshot.getValue(Boolean.class);
+                if (connected == null || !connected) {
+                    // We're offline from the SDK's point of view; the
+                    // onDisconnect() registered on the previous "connected"
+                    // tick (if any) has already been or will be executed
+                    // by the server. Nothing to do here.
+                    return;
+                }
+                final DatabaseReference ref = sPresenceOnlineRef;
+                if (ref == null) return;
+
+                // Step 1: arm the server-side disconnect handler FIRST.
+                // If we wrote "true" first and the connection dropped right
+                // after, no onDisconnect would be in place and the value
+                // would be stuck at "true".
+                ref.onDisconnect().setValue(false)
+                        .addOnCompleteListener(t -> ref.setValue(true));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Permissions / shutdown - just give up; will be re-armed
+                // on the next attachPresence().
+            }
+        };
+        sPresenceConnRef.addValueEventListener(sPresenceListener);
+    }
+
+    /**
+     * Stop tracking presence. Best-effort marks the user offline immediately
+     * and cancels any pending onDisconnect.
+     */
+    public static synchronized void detachPresence() {
+        if (sPresenceConnRef != null && sPresenceListener != null) {
+            try {
+                sPresenceConnRef.removeEventListener(sPresenceListener);
+            } catch (Throwable ignored) {}
+        }
+        if (sPresenceOnlineRef != null) {
+            try {
+                sPresenceOnlineRef.onDisconnect().cancel();
+                sPresenceOnlineRef.setValue(false);
+            } catch (Throwable ignored) {}
+        }
+        sPresenceConnRef = null;
+        sPresenceListener = null;
+        sPresenceOnlineRef = null;
+        sPresenceLogin = null;
+    }
+
     /** Load all registered user logins. */
     public static void loadUserList(final UserListCallback cb) {
         usersRef().addListenerForSingleValueEvent(new ValueEventListener() {

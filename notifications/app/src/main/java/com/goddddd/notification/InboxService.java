@@ -86,10 +86,17 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
         // Online status follows this service's lifetime:
         //  - service alive (foreground or background) => user is online (can receive alerts)
         //  - service dead (swiped out / killed)       => user is offline
+        //
+        // attachPresence() listens to Firebase ".info/connected" so the
+        // online flag is automatically re-asserted after every reconnect
+        // (Wi-Fi toggle, VPN toggle, Doze recovery, etc). Without this we
+        // would only set online=true once, and the server-side
+        // onDisconnect would flip us to "false" on the first network blip
+        // and never flip back.
         try {
             SessionManager sm = new SessionManager(this);
             if (sm.isLoggedIn()) {
-                RemoteUsers.setOnline(sm.getLogin(), true);
+                RemoteUsers.attachPresence(sm.getLogin());
             }
         } catch (Throwable ignored) {}
     }
@@ -209,10 +216,7 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
     public void onDestroy() {
         // Try to mark offline before tearing everything down.
         try {
-            SessionManager sm = new SessionManager(this);
-            if (sm.isLoggedIn()) {
-                RemoteUsers.setOnline(sm.getLogin(), false);
-            }
+            RemoteUsers.detachPresence();
         } catch (Throwable ignored) {}
         AlarmEngine.removeDismissListener(this);
         detach();
@@ -226,10 +230,7 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         try {
-            SessionManager sm = new SessionManager(this);
-            if (sm.isLoggedIn()) {
-                RemoteUsers.setOnline(sm.getLogin(), false);
-            }
+            RemoteUsers.detachPresence();
         } catch (Throwable ignored) {}
         super.onTaskRemoved(rootIntent);
     }
