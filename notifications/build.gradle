@@ -4,9 +4,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Понижаем до 4.2.1 (как у вас было), но добавляем Google Services
-        classpath "com.android.tools.build:gradle:4.2.1"
-        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.android.tools.build:gradle:9.1.1'
+        classpath 'com.google.gms:google-services:4.4.1'
     }
 }
 

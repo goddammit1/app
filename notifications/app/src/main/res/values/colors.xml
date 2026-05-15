@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Старые цвета (оставлены для совместимости) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,4 +8,30 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Палитра тёмной темы приложения -->
+    <color name="dark_background">#121212</color>           <!-- фон Activity -->
+    <color name="dark_surface">#1E1E1E</color>              <!-- карточки, поля -->
+    <color name="dark_surface_variant">#2A2A2A</color>      <!-- поля ввода, второстепенные поверхности -->
+    <color name="dark_stroke">#3A3A3A</color>               <!-- линии/обводки -->
+
+    <color name="dark_primary">#2196F3</color>              <!-- акцент (синий) -->
+    <color name="dark_primary_variant">#1976D2</color>      <!-- статус-бар, нажатие -->
+    <color name="dark_on_primary">#FFFFFF</color>
+
+    <color name="dark_secondary">#03DAC6</color>            <!-- второй акцент -->
+    <color name="dark_danger">#CF6679</color>               <!-- кнопка "Нет/Отменить" -->
+    <color name="dark_neutral">#424242</color>              <!-- нейтральная кнопка -->
+
+    <color name="dark_text_primary">#FFFFFFFF</color>
+    <color name="dark_text_secondary">#FFE0E0E0</color>
+    <color name="dark_text_hint">#FF9E9E9E</color>
+
+    <!-- Report status colors -->
+    <color name="status_ready_bg">#1F2E7D32</color>     <!-- translucent green -->
+    <color name="status_ready_fg">#FF66BB6A</color>     <!-- bright green text -->
+    <color name="status_not_ready_bg">#1FCF6679</color> <!-- translucent red -->
+    <color name="status_not_ready_fg">#FFEF5350</color> <!-- bright red text -->
+    <color name="status_pending_bg">#1F9E9E9E</color>   <!-- translucent grey -->
+    <color name="status_pending_fg">#FFBDBDBD</color>   <!-- soft grey text -->
 </resources>

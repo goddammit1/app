@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- FileProvider exposes apps' internal cache so the system installer
+         can read the downloaded APK during self-update. -->
+    <cache-path name="updates" path="updates/" />
+</paths>

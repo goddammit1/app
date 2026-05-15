@@ -1,3 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">notifications</string>
+    <string name="app_name">Notifications</string>
+
+    <string name="main_title">Notifications</string>
+    <string name="main_logout">Logout</string>
+    <string name="main_welcome">Signed in as: %1$s</string>
+    <string name="main_pick_user">Send to a specific user</string>
+    <string name="main_broadcast">Send to everyone (group1)</string>
+    <string name="broadcast_info">Broadcast goes through FCM topic group1 — your server / Firebase Console sends it.</string>
+
+    <string name="dialog_title">ALERT!</string>
+    <string name="dialog_question">Are you ready?</string>
+    <string name="dialog_yes">READY</string>
+    <string name="dialog_no">NO</string>
+
+    <string name="overlay_title">ALERT!</string>
+    <string name="overlay_message">Tap to acknowledge.</string>
+    <string name="overlay_cancel">Cancel</string>
+    <string name="overlay_confirm">Confirm</string>
+
+    <string name="login_title">Login</string>
+    <string name="login_subtitle">Enter your login and password</string>
+    <string name="hint_login">Login</string>
+    <string name="hint_password">Password</string>
+    <string name="login_btn">Sign in</string>
+    <string name="go_register">No account? Register</string>
+
+    <string name="register_title">Register</string>
+    <string name="register_subtitle">Create a new account</string>
+    <string name="hint_login_min">Login (min 3 characters)</string>
+    <string name="hint_password_min">Password (min 6 characters)</string>
+    <string name="hint_password_confirm">Repeat password</string>
+    <string name="register_btn">Register</string>
+    <string name="go_login">Already have an account? Sign in</string>
+
+    <string name="users_title">Pick recipient</string>
+    <string name="users_hint">Tap a user to send an alert</string>
+    <string name="users_empty">No registered users</string>
+
+    <string name="logout_title">Logout</string>
+    <string name="logout_msg">Sign out of your account?</string>
+    <string name="logout_yes">Sign out</string>
+    <string name="logout_done">You have been signed out</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="hint_input">Enter text</string>
+    <string name="send_btn">Send</string>
+
+    <string name="main_online_users">Online users</string>
+    <string name="main_reports">Reports</string>
+    <string name="reports_title">Reports</string>
+    <string name="reports_hint">Tap an alert to see who is ready / not ready / no response.</string>
+    <string name="reports_empty">You have not sent any alerts yet.</string>
+
+    <string name="main_request_overlay">Allow overlay (open settings)</string>
+
+    <string name="main_pick_sound">Choose alarm sound</string>
+    <string name="sound_default">Default</string>
+    <string name="sound_picked">Sound: %1$s</string>
+    <string name="sound_picker_title">Pick alarm sound</string>
+    <string name="sound_reset">Reset to default</string>
+    <string name="sound_picker_dialog">Choose audio file</string>
+    <string name="sound_saved">Sound saved: %1$s</string>
+    <string name="sound_reset_done">Reset to default sound</string>
+    <string name="sound_save_error">Could not save sound: %1$s</string>
+
+    <string name="detail_title">Alert details</string>
+    <string name="detail_section_ready">Ready (%1$d)</string>
+    <string name="detail_section_not_ready">Not ready (%1$d)</string>
+    <string name="detail_section_pending">No response (%1$d)</string>
+    <string name="detail_no_text">(no text)</string>
 </resources>
