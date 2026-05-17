@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+        Game-status tracking: lets us know which app is in the foreground
+        so we can flip users/<login>/inGame in Firebase when Mobile Legends
+        is on screen. This is a special permission: the user must grant it
+        manually from "Settings > Apps > Special access > Usage access".
+        We never query usage stats for any app other than the configured
+        package, and we don't persist the data anywhere except as a single
+        boolean flag for the current user. tools:ignore=ProtectedPermissions
+        is just to silence the lint warning - PACKAGE_USAGE_STATS is a
+        first-party permission, but lint flags it as "system only" because
+        normal apps can't grant it programmatically (which is true).
+    -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />

@@ -37,6 +37,11 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
     private String myLogin;
     private boolean primed = false;
 
+    /** Tracks whether the configured game (see {@link GameWatcher#TRACKED_PACKAGE})
+     *  is currently in the foreground and mirrors that into Firebase.
+     *  Stays {@code null} until we have a login + usage-access permission. */
+    private GameWatcher gameWatcher;
+
     private final Deque<PendingMsg> queue = new ArrayDeque<>();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -97,6 +102,18 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
             SessionManager sm = new SessionManager(this);
             if (sm.isLoggedIn()) {
                 RemoteUsers.attachPresence(sm.getLogin());
+                // Start the game-foreground watcher right away. It is a
+                // no-op if PACKAGE_USAGE_STATS hasn't been granted yet -
+                // in that case the user simply won't have an "inGame"
+                // flag in the DB until they enable the permission and
+                // restart the service (or relog).
+                try {
+                    gameWatcher = new GameWatcher(
+                            getApplicationContext(), sm.getLogin());
+                    gameWatcher.start();
+                } catch (Throwable t) {
+                    Log.w(TAG, "GameWatcher start failed", t);
+                }
             }
         } catch (Throwable ignored) {}
     }
@@ -214,6 +231,16 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
 
     @Override
     public void onDestroy() {
+        // Stop the game watcher first so it has a chance to clear the
+        // inGame flag while the Firebase socket is still alive. If we
+        // tore down presence first the watcher's final setInGame(false)
+        // might race against detachPresence()'s own clear, but doing it
+        // in this order means at worst we get a redundant write.
+        try {
+            if (gameWatcher != null) gameWatcher.stop();
+        } catch (Throwable ignored) {}
+        gameWatcher = null;
+
         // Try to mark offline before tearing everything down.
         try {
             RemoteUsers.detachPresence();
@@ -229,6 +256,9 @@ public class InboxService extends Service implements AlarmEngine.DismissCallback
      */
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        try {
+            if (gameWatcher != null) gameWatcher.stop();
+        } catch (Throwable ignored) {}
         try {
             RemoteUsers.detachPresence();
         } catch (Throwable ignored) {}

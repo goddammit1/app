@@ -29,9 +29,11 @@ import java.util.List;
 /**
  * Pick-recipient / Online-users screen.
  *
- * Each row is: [avatar (with online dot)] [display name] [Online/Offline].
+ * Each row is: [avatar (with online dot)] [name + optional "Playing X"] [Online/Offline].
  * When the row's user has no avatar, a generic silhouette is rendered;
  * the online dot is anchored to the avatar's bottom-right corner.
+ * The "Playing X" sub-line under the display name shows up only while
+ * the user is currently in the tracked game (see {@link GameWatcher}).
  */
 public class UsersListActivity extends AppCompatActivity {
 
@@ -202,6 +204,38 @@ public class UsersListActivity extends AppCompatActivity {
                 h.status.setTextColor(getResources().getColor(R.color.status_pending_fg));
             }
 
+            // Discord-style sub-line under the user's name.
+            //   "Playing Mobile Legends"           - game is on screen now
+            //   "Mobile Legends in background"     - process alive, user
+            //                                        is doing something else
+            // We trust the flag from Firebase only while its server
+            // timestamp is fresh. TTL is per-state (playing has a much
+            // shorter window than minimized) and lives in GameWatcher
+            // so writer and reader can never drift out of sync.
+            long now = System.currentTimeMillis();
+            String gs = u.gameState;
+            long age = (u.gameTs > 0) ? (now - u.gameTs) : Long.MAX_VALUE;
+            String gameName = getString(R.string.tracked_game_name);
+            if (GameWatcher.STATE_PLAYING.equals(gs)
+                    && age < GameWatcher.PLAYING_TTL_MS) {
+                h.playing.setText(getString(R.string.users_list_playing, gameName));
+                // Normal secondary text colour - "active in game right now".
+                h.playing.setTextColor(getResources().getColor(R.color.text_secondary));
+                h.playing.setAlpha(1f);
+                h.playing.setVisibility(View.VISIBLE);
+            } else if (GameWatcher.STATE_MINIMIZED.equals(gs)
+                    && age < GameWatcher.MINIMIZED_TTL_MS) {
+                h.playing.setText(getString(R.string.users_list_minimized, gameName));
+                // Dimmer - "process alive but not actually playing".
+                // Same colour, lower alpha keeps the design consistent
+                // and clearly less prominent than the live "playing" state.
+                h.playing.setTextColor(getResources().getColor(R.color.text_secondary));
+                h.playing.setAlpha(0.55f);
+                h.playing.setVisibility(View.VISIBLE);
+            } else {
+                h.playing.setVisibility(View.GONE);
+            }
+
             // Avatar: placeholder first, then async load if the user has one.
             final String login = u.login;
             h.avatarPlaceholder.setVisibility(View.VISIBLE);
@@ -308,14 +342,35 @@ public class UsersListActivity extends AppCompatActivity {
 
             row.addView(avatarBox);
 
-            // Name (takes remaining space).
-            TextView name = new TextView(UsersListActivity.this);
-            LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(
+            // Name + "Playing X" stacked vertically, taking the
+            // remaining horizontal space. The "Playing X" line is
+            // Discord-inspired: small secondary text under the
+            // primary name, only visible when the user is currently
+            // in the tracked game.
+            LinearLayout nameBlock = new LinearLayout(UsersListActivity.this);
+            nameBlock.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams nameBlockLp = new LinearLayout.LayoutParams(
                     0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-            name.setLayoutParams(nameLp);
+            nameBlock.setLayoutParams(nameBlockLp);
+
+            TextView name = new TextView(UsersListActivity.this);
+            name.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
             name.setTextSize(16);
             name.setTextColor(getResources().getColor(R.color.dark_text_primary));
-            row.addView(name);
+            nameBlock.addView(name);
+
+            TextView playing = new TextView(UsersListActivity.this);
+            playing.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            playing.setTextSize(11);
+            playing.setTextColor(getResources().getColor(R.color.text_secondary));
+            playing.setVisibility(View.GONE);
+            nameBlock.addView(playing);
+
+            row.addView(nameBlock);
 
             // Online / Offline label on the right.
             TextView status = new TextView(UsersListActivity.this);
@@ -327,6 +382,7 @@ public class UsersListActivity extends AppCompatActivity {
             h.avatarPlaceholder = avatarPlaceholder;
             h.onlineDot = onlineDot;
             h.name = name;
+            h.playing = playing;
             h.status = status;
             row.setTag(h);
             return row;
@@ -338,6 +394,9 @@ public class UsersListActivity extends AppCompatActivity {
         ImageView avatarPlaceholder;
         View onlineDot;
         TextView name;
+        /** Optional sub-line under the name: "Playing Mobile Legends".
+         *  GONE when the user is not in the tracked game. */
+        TextView playing;
         TextView status;
     }
 }

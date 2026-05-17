@@ -129,4 +129,18 @@
 
     <string name="settings_updates_up_to_date">You are on the latest version</string>
     <string name="settings_lockscreen_unsupported">No special permission needed on this Android version</string>
+
+    <!-- Game tracking (Mobile Legends watcher). -->
+    <string name="settings_gametrack_title">Game status</string>
+    <string name="settings_gametrack_sub">grant Usage access to share \"playing\" with friends</string>
+    <string name="settings_gametrack_already_granted">Usage access already granted</string>
+    <string name="settings_gametrack_unsupported">Usage access is not available on this Android version</string>
+
+    <!-- Sub-line in the users list under the user's display name. -->
+    <!-- "Playing Mobile Legends" - game is on screen right now. -->
+    <string name="users_list_playing">Playing %1$s</string>
+    <!-- "Mobile Legends in background" - process alive, user not in match. -->
+    <string name="users_list_minimized">%1$s in background</string>
+    <!-- Human-readable name of the only game we currently track. -->
+    <string name="tracked_game_name">Mobile Legends</string>
 </resources>

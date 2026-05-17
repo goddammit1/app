@@ -389,6 +389,39 @@ public class RemoteUsers {
         }
     }
 
+    // ---------- Game status ----------
+    //
+    // Single-game tracking with three states:
+    //
+    //   users/<login>/gameState = "playing"   - tracked game on screen now
+    //   users/<login>/gameState = "minimized" - was on screen recently
+    //                                          but process is just sitting
+    //                                          in the background now
+    //   users/<login>/gameState = null        - not tracking / not playing
+    //   users/<login>/gameTs    = <ms>        - when gameState was last set
+    //
+    // GameWatcher (inside InboxService) is the only writer. Readers must
+    // also check freshness via GameWatcher.PLAYING_TTL_MS /
+    // MINIMIZED_TTL_MS - if the watcher dies or the phone sleeps, the
+    // last-written state becomes stale and we stop trusting it
+    // (no manual cleanup necessary).
+
+    /**
+     * Write (or clear with {@code null}) the user's current game state.
+     * Always refreshes {@code gameTs} so readers can do a freshness check.
+     */
+    public static void setGameState(String login, String state) {
+        if (login == null || login.isEmpty()) return;
+        Map<String, Object> upd = new HashMap<>();
+        upd.put("gameState", state);    // can be null - that's how we clear it
+        upd.put("gameTs", System.currentTimeMillis());
+        // Drop the legacy boolean field. Doing it in the same update
+        // means existing users with leftover "inGame=true" don't keep
+        // showing "Playing X" forever after we ship the tri-state.
+        upd.put("inGame", null);
+        usersRef().child(login).updateChildren(upd);
+    }
+
     // ---------- Presence (reconnect-aware) ----------
     //
     // Why this exists:
@@ -450,8 +483,32 @@ public class RemoteUsers {
                 // If we wrote "true" first and the connection dropped right
                 // after, no onDisconnect would be in place and the value
                 // would be stuck at "true".
+                //
+                // We also arm an onDisconnect for users/<login>/inGame:
+                // when the socket dies, the server will flip inGame=false
+                // for us without waiting for the TTL. That way other
+                // clients see "stopped playing" almost immediately on
+                // logout / app-kill, instead of after ~1 minute.
+                final String loginNow = sPresenceLogin;
+                final DatabaseReference gameStateRef = (loginNow != null)
+                        ? usersRef().child(loginNow).child("gameState")
+                        : null;
                 ref.onDisconnect().setValue(false)
-                        .addOnCompleteListener(t -> ref.setValue(true));
+                        .addOnCompleteListener(t -> {
+                            // When the socket dies, also drop the game
+                            // state so other clients don't keep seeing a
+                            // "Playing X" / "X in background" stamp for
+                            // an offline user. The boolean inGame field
+                            // is intentionally NOT armed here - it's
+                            // legacy and the new setGameState() write
+                            // already clears it on the next write.
+                            if (gameStateRef != null) {
+                                try {
+                                    gameStateRef.onDisconnect().setValue(null);
+                                } catch (Throwable ignored) {}
+                            }
+                            ref.setValue(true);
+                        });
             }
 
             @Override
@@ -477,6 +534,19 @@ public class RemoteUsers {
             try {
                 sPresenceOnlineRef.onDisconnect().cancel();
                 sPresenceOnlineRef.setValue(false);
+            } catch (Throwable ignored) {}
+        }
+        // Symmetric to attachPresence(): also drop the game state and
+        // its onDisconnect handler. We don't want a logged-out user to
+        // show up as "playing X" elsewhere.
+        if (sPresenceLogin != null) {
+            try {
+                DatabaseReference gs =
+                        usersRef().child(sPresenceLogin).child("gameState");
+                gs.onDisconnect().cancel();
+                gs.setValue(null);
+                // Also remove the legacy boolean if it still exists.
+                usersRef().child(sPresenceLogin).child("inGame").setValue(null);
             } catch (Throwable ignored) {}
         }
         sPresenceConnRef = null;
@@ -519,6 +589,9 @@ public class RemoteUsers {
                     u.hasAvatar = Boolean.TRUE.equals(has);
                     Long ts = child.child("avatarTs").getValue(Long.class);
                     u.avatarTs = ts != null ? ts : 0L;
+                    u.gameState = child.child("gameState").getValue(String.class);
+                    Long gts = child.child("gameTs").getValue(Long.class);
+                    u.gameTs = gts != null ? gts : 0L;
                     list.add(u);
                 }
                 cb.onResult(list);
@@ -931,6 +1004,14 @@ public class RemoteUsers {
         public boolean hasAvatar;
         /** Last avatar update timestamp - used as a cache key. */
         public long avatarTs;
+        /** Last known tri-state from Firebase:
+         *  {@link GameWatcher#STATE_PLAYING},
+         *  {@link GameWatcher#STATE_MINIMIZED}, or {@code null}.
+         *  Trust this only if {@link #gameTs} is fresh
+         *  (see {@link GameWatcher#PLAYING_TTL_MS} / MINIMIZED_TTL_MS). */
+        public String gameState;
+        /** Server-time ms when {@link #gameState} was last written. */
+        public long gameTs;
     }
 
     public static class AlertSummary {

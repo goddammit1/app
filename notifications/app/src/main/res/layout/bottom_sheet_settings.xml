@@ -466,6 +466,60 @@
                         android:textSize="11sp" />
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- ============================================================
+                 Game tracking (third row)
+
+                 A single wide card. Opens the system Usage Access page so
+                 the user can grant PACKAGE_USAGE_STATS to this app; with
+                 the permission, GameWatcher inside InboxService starts
+                 polling and mirrors users/<login>/inGame to Firebase.
+                 ============================================================ -->
+            <LinearLayout
+                android:id="@+id/tileGameTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_settings_card"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_marginEnd="14dp"
+                    android:src="@drawable/ic_gamepad"
+                    app:tint="@color/accent_white"
+                    android:contentDescription="@null" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_gametrack_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_gametrack_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

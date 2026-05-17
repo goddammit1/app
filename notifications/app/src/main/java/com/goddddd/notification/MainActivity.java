@@ -660,6 +660,12 @@ public class MainActivity extends AppCompatActivity {
             openLockScreenPermission();
         });
 
+        // ---- Row 3: Game tracking (Mobile Legends).
+        root.findViewById(R.id.tileGameTrack).setOnClickListener(v -> {
+            pendingSheetOnResume = SheetToReopen.SETTINGS;
+            openUsageAccessSettings();
+        });
+
         // ---- Footer "back" button: explicitly dismiss the settings
         // sheet so the existing onDismissListener logic re-opens the
         // main menu sheet (the user expects to "go back" to where they
@@ -736,6 +742,48 @@ public class MainActivity extends AppCompatActivity {
      *     manifest (which it is). Tell the user nothing special is
      *     required.
      */
+    /**
+     * Open the system "Usage access" page so the user can grant
+     * PACKAGE_USAGE_STATS to this app. The watcher in
+     * {@link InboxService} starts producing inGame updates once that
+     * permission is granted (next service start - i.e. relog or
+     * device unlock will re-attach the watcher).
+     *
+     *   * Already granted -> Toast and stay put.
+     *   * Not granted -> ACTION_USAGE_ACCESS_SETTINGS. Pre-API 22 we
+     *     don't even have that screen, so we just inform the user.
+     */
+    private void openUsageAccessSettings() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            pendingSheetOnResume = SheetToReopen.NONE;
+            Toast.makeText(this, R.string.settings_gametrack_unsupported,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (GameWatcher.hasUsageAccess(this)) {
+            pendingSheetOnResume = SheetToReopen.NONE;
+            Toast.makeText(this, R.string.settings_gametrack_already_granted,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } catch (Exception e) {
+            // Some OEMs reject the package-scoped variant - fall back
+            // to the global Usage Access page where the user can find
+            // our app manually.
+            try {
+                startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+            } catch (Exception inner) {
+                Toast.makeText(this,
+                        getString(R.string.settings_open_failed, inner.getMessage()),
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     private void openLockScreenPermission() {
         if (Build.VERSION.SDK_INT >= 34) {
             try {
