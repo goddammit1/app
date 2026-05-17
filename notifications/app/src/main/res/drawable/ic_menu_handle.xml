@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Same designer mark as ic_heart but flipped vertically. It's used as
+    the "open menu" button at the bottom of the home screen, so when the
+    sheet is closed the icon points "upwards" toward where the menu will
+    appear.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80"
+    android:tint="@color/accent_white">
+    <group
+        android:pivotX="40"
+        android:pivotY="40"
+        android:scaleY="-1">
+        <path
+            android:fillColor="@android:color/white"
+            android:pathData="M55.2467,57.9144C53.3079,60.9909 51.3347,64.11 48.7134,66.5529C46.092,69.0019 42.6963,70.732 39.2146,70.5066C36.1573,70.3056 33.3237,68.612 31.0866,66.4006C28.8496,64.1892 27.1116,61.4661 25.4023,58.7673C20.7791,51.4812 16.1501,44.1951 11.5269,36.903C9.33,33.4427 7.0758,29.8301 6.4678,25.7058C5.7336,20.7225 7.7125,15.6479 11.2229,12.3338C14.8939,8.8674 20.8422,9.1477 25.3105,10.098C30.209,11.1398 34.9986,13.1014 39.9946,13.0953C44.2737,13.0953 48.4094,11.6454 52.5737,10.5915C56.7323,9.5437 61.2006,8.8979 65.2158,10.4575C70.2004,12.3886 73.7797,17.8776 73.6822,23.5127C73.5904,28.6544 68.1068,37.5244 68.1068,37.5244C68.1068,37.5244 59.5325,51.1172 55.2467,57.9144Z" />
+    </group>
+</vector>

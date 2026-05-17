@@ -61,9 +61,11 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         btnRegister.setEnabled(false);
+        BusyOverlay.show(this, "Creating account...");
         RemoteUsers.registerRemote(login, password, new RemoteUsers.AuthCallback() {
             @Override
             public void onSuccess(String login) {
+                BusyOverlay.hide(RegisterActivity.this);
                 session.login(login);
                 InboxService.start(getApplicationContext());
                 Toast.makeText(RegisterActivity.this, "Account created!",
@@ -76,6 +78,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                BusyOverlay.hide(RegisterActivity.this);
                 btnRegister.setEnabled(true);
                 Toast.makeText(RegisterActivity.this,
                         message != null ? message : "Registration failed",

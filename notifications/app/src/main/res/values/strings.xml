@@ -70,4 +70,63 @@
     <string name="detail_section_not_ready">Not ready (%1$d)</string>
     <string name="detail_section_pending">No response (%1$d)</string>
     <string name="detail_no_text">(no text)</string>
+
+    <!-- Bottom sheet menu -->
+    <string name="menu_open">Menu</string>
+    <string name="menu_close">Close menu</string>
+    <string name="menu_title">Menu</string>
+    <string name="menu_settings">Settings</string>
+
+    <!-- Settings sheet -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_self_test">Self-test</string>
+    <string name="settings_notifications">Notifications permission</string>
+    <string name="settings_overlay">Display over other apps</string>
+    <string name="settings_battery">Disable battery optimization</string>
+    <string name="settings_already_granted">Already granted</string>
+    <string name="settings_open_failed">Could not open settings: %1$s</string>
+    <string name="settings_profile">Profile</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_avatar_hint">Tap avatar to change. Long-press to remove.</string>
+    <string name="profile_display_name">Display name</string>
+    <string name="profile_display_name_hint">Display name (anything you like)</string>
+    <string name="profile_save_name">Save name</string>
+    <string name="profile_name_saved">Display name updated</string>
+    <string name="profile_change_password">Change password</string>
+    <string name="profile_old_password">Current password</string>
+    <string name="profile_new_password">New password</string>
+    <string name="profile_new_password_confirm">Repeat new password</string>
+    <string name="profile_save_password">Update password</string>
+    <string name="profile_password_changed">Password updated</string>
+    <string name="profile_password_mismatch">New passwords do not match</string>
+    <string name="profile_password_short">New password must be at least 6 characters</string>
+    <string name="profile_password_wrong">Current password is wrong</string>
+    <string name="profile_delete_account">Delete account</string>
+    <string name="profile_delete_confirm">This will delete your account and all alerts you have sent. You will be signed out. Continue?</string>
+    <string name="profile_avatar_saved">Avatar updated</string>
+    <string name="profile_avatar_removed">Avatar removed</string>
+    <string name="profile_avatar_remove_confirm">Remove avatar?</string>
+    <string name="profile_avatar_load_error">Could not read image: %1$s</string>
+
+    <!-- Redesigned Settings sheet: new tiles, profile card, sub-labels. -->
+    <string name="settings_profile_name_default">Name</string>
+
+    <string name="settings_battery_title">Battery</string>
+    <string name="settings_battery_sub">access</string>
+    <string name="settings_display_title">Display</string>
+    <string name="settings_display_sub">over other apps</string>
+    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_notifications_sub">permission</string>
+
+    <string name="settings_selftest_title">Self-test</string>
+    <string name="settings_selftest_sub">play the alarm now</string>
+    <string name="settings_updates_title">Updates</string>
+    <string name="settings_updates_sub">check now</string>
+    <string name="settings_lockscreen_title">Lock screen</string>
+    <string name="settings_lockscreen_sub">show on lock</string>
+
+    <string name="settings_updates_up_to_date">You are on the latest version</string>
+    <string name="settings_lockscreen_unsupported">No special permission needed on this Android version</string>
 </resources>

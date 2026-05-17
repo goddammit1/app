@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Redesigned Settings bottom sheet.
+
+    Top-level structure is a vertical LinearLayout that fills the whole
+    sheet:
+        * a ScrollView with weight=1 takes everything above the footer
+          and is the only scrollable element on the screen (header +
+          profile card + grid 1 + grid 2 live inside it);
+        * a fixed-height footer "back" panel sits below the ScrollView,
+          so it stays anchored to the bottom of the sheet at all times
+          regardless of scroll position. The footer is NOT inside the
+          ScrollView - that was the previous mistake, which made the
+          back button only appear at the very end of the content.
+
+    The activity opens this sheet in STATE_EXPANDED with
+    setHideable(false) and setDraggable(false), so it cannot be
+    swiped away and the only exit is the footer button.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_panel">
+
+    <!-- ==========================================================
+         Scrollable content area
+         ========================================================== -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp">
+
+            <!-- ============================================================
+                 Header
+                 ============================================================ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:text="@string/settings_title"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- ============================================================
+                 Profile card (outlined)
+                 ============================================================ -->
+            <FrameLayout
+                android:id="@+id/cardProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_settings_card_outlined"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp">
+
+                <!-- Inner vertical block: avatar + name, centered. -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <!--
+                        Avatar holder. We layer two views in the same spot:
+                          * avatarImage (visible once the bitmap loads),
+                          * avatarPlaceholder (dark rounded square,
+                            always present underneath as the fallback).
+                    -->
+                    <FrameLayout
+                        android:layout_width="80dp"
+                        android:layout_height="80dp">
+
+                        <ImageView
+                            android:id="@+id/profileAvatarPlaceholder"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_avatar_square"
+                            android:contentDescription="@null" />
+
+                        <ImageView
+                            android:id="@+id/profileAvatarImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone"
+                            android:contentDescription="@null" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/profileName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/settings_profile_name_default"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Tiny "edit" chip in the top-right corner. -->
+                <FrameLayout
+                    android:id="@+id/btnProfileEdit"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/bg_edit_chip"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <!-- ============================================================
+                 Grid 1: Battery + Display + Notifications
+
+                 Both this grid and grid 2 share the SAME vertical split
+                 (a Guideline at exactly 50% of the parent width). The
+                 left and right cards are then anchored to that guideline
+                 with identical 3dp half-gaps, producing a perfectly
+                 mirrored layout: the vertical seam between left and
+                 right columns lines up between grid 1 and grid 2.
+                 ============================================================ -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+
+                <!-- The split: exactly the middle of the row. -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/grid1Center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5" />
+
+                <!-- Left column, top: Battery (square) -->
+                <LinearLayout
+                    android:id="@+id/tileBatteryPerm"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="@drawable/bg_settings_card"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintDimensionRatio="H,1:1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/grid1Center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_battery"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_battery_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_battery_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- Left column, bottom: Display (square) -->
+                <LinearLayout
+                    android:id="@+id/tileOverlayPerm"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_settings_card"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintDimensionRatio="H,1:1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tileBatteryPerm"
+                    app:layout_constraintEnd_toStartOf="@id/grid1Center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_layers"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_display_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_display_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- Right column: Notifications (tall) -->
+                <LinearLayout
+                    android:id="@+id/tileNotifPerm"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="3dp"
+                    android:background="@drawable/bg_settings_card"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintTop_toTopOf="@id/tileBatteryPerm"
+                    app:layout_constraintBottom_toBottomOf="@id/tileOverlayPerm"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/grid1Center">
+
+                    <ImageView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:src="@drawable/ic_bell"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_notifications_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_notifications_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- ============================================================
+                 Grid 2 (mirrored): Self-test + Updates + Lock screen
+
+                 Uses its own Guideline at 50% so the vertical split
+                 lines up exactly with grid 1. With identical 3dp
+                 half-gaps on both sides of the seam the geometry is
+                 a true mirror of grid 1: tall card on the LEFT now,
+                 two squares on the RIGHT.
+                 ============================================================ -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/grid2Center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5" />
+
+                <!-- Right column, top: Check for updates (square) -->
+                <LinearLayout
+                    android:id="@+id/tileCheckUpdates"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="3dp"
+                    android:background="@drawable/bg_settings_card"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintDimensionRatio="H,1:1"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/grid2Center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_refresh"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_updates_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_updates_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- Right column, bottom: Show on lock screen (square) -->
+                <LinearLayout
+                    android:id="@+id/tileLockScreen"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_settings_card"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintDimensionRatio="H,1:1"
+                    app:layout_constraintTop_toBottomOf="@id/tileCheckUpdates"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/grid2Center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_lock_screen"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_lockscreen_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_lockscreen_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- Left column: Self-test (tall) -->
+                <LinearLayout
+                    android:id="@+id/tileSelfTest"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="@drawable/bg_settings_card"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:layout_constraintTop_toTopOf="@id/tileCheckUpdates"
+                    app:layout_constraintBottom_toBottomOf="@id/tileLockScreen"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/grid2Center">
+
+                    <ImageView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:src="@android:drawable/ic_menu_compass"
+                        app:tint="@color/accent_white"
+                        android:contentDescription="@null" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_selftest_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_selftest_sub"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ==========================================================
+         Footer (back to main menu) - sibling of the ScrollView,
+         so it stays pinned at the bottom of the sheet at all
+         times. We reuse @drawable/ic_heart (the same custom mark
+         that opens the menu sheet) rotated 90 degrees so its
+         corner points left, reading as a "back" affordance while
+         keeping the design system consistent.
+         ========================================================== -->
+    <FrameLayout
+        android:id="@+id/footerBack"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_settings_footer"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_heart"
+            android:rotation="90"
+            app:tint="@color/accent_white"
+            android:contentDescription="@null" />
+    </FrameLayout>
+</LinearLayout>

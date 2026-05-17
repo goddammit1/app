@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Main menu (bottom sheet).
+
+    Layout:
+        - Small white heart on top, acts as a visual drag handle.
+        - Row 1: two equal-width pills (Send | Users).
+        - Row 2: wider History pill (weight 3) + Bell + Gear squircles
+                 (weight 1 each).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bg_panel"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="28dp">
+
+    <!--
+        Heart "handle" at the top of the menu sheet. Reusing the same
+        mark that's drawn upside-down on the home screen creates a
+        visual loop: the user opens the menu by tapping the heart on
+        the home screen, then closes it by tapping the heart again at
+        the top of the sheet. We give it a sensible touch target (40dp)
+        via padding so the actual graphic stays 20dp wide.
+    -->
+    <ImageView
+        android:id="@+id/menuHandle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_heart"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        app:tint="@color/accent_white"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:contentDescription="@string/menu_close" />
+
+    <!-- Row 1: Send + Users -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:weightSum="2">
+
+        <!-- Send notification (outlined) -->
+        <LinearLayout
+            android:id="@+id/tileSend"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/bg_pill_outlined"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_send"
+                app:tint="@color/accent_white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:contentDescription="@null"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Send"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="notification"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_chevron_right"
+                app:tint="@color/accent_white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:contentDescription="@null" />
+        </LinearLayout>
+
+        <!-- Users online (filled) -->
+        <LinearLayout
+            android:id="@+id/tileUsers"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/bg_pill_filled"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_users"
+                app:tint="@color/accent_white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:contentDescription="@null"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Users"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="online"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Row 2: History + Bell + Gear -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:layout_marginTop="12dp"
+        android:weightSum="5">
+
+        <!-- History reports -->
+        <LinearLayout
+            android:id="@+id/tileHistory"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_weight="3"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/bg_pill_filled"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_history"
+                app:tint="@color/accent_white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:contentDescription="@null"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="History"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="reports"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Bell (squircle) - alarm sound picker -->
+        <FrameLayout
+            android:id="@+id/tileBell"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_squircle"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_bell"
+                app:tint="@color/accent_white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <!-- Gear (squircle) - settings -->
+        <FrameLayout
+            android:id="@+id/tileGear"
+            android:layout_width="0dp"
+            android:layout_height="76dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_squircle"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_gear"
+                app:tint="@color/accent_white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:contentDescription="@null" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Hidden status line: surfaced in MainActivity if there is something
+         worth telling (errors etc). Left empty by default. -->
+    <TextView
+        android:id="@+id/sheetSoundStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:visibility="gone"
+        tools:text="Sound: Default" />
+
+</LinearLayout>

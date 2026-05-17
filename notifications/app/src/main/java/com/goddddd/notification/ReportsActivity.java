@@ -54,8 +54,18 @@ public class ReportsActivity extends AppCompatActivity {
 
                 String dateStr = DateFormat.format("dd.MM HH:mm", a.ts).toString();
                 String text = (a.text != null && !a.text.isEmpty()) ? a.text : "(no text)";
-                t1.setText(dateStr + " - " + text);
-                t2.setText("Responses: " + a.responseCount + " / " + a.recipientCount);
+                String from = (a.from != null && !a.from.isEmpty()) ? a.from : "?";
+                String me = session != null ? session.getLogin() : null;
+                boolean mine = me != null && me.equalsIgnoreCase(a.from);
+
+                String prefix = a.selfTest
+                        ? "[self-test] "
+                        : (mine ? "" : from + ": ");
+                t1.setText(dateStr + " - " + prefix + text);
+
+                String tag = mine ? "by you" : ("by " + from);
+                t2.setText("Responses: " + a.responseCount + " / "
+                        + a.recipientCount + "  -  " + tag);
                 return v;
             }
         };

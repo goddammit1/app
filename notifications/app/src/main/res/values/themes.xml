@@ -1,38 +1,38 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Базовая тема приложения (всегда тёмная) -->
+    <!-- Base app theme (always dark) -->
     <style name="Theme.Notifications" parent="Theme.MaterialComponents.NoActionBar">
-        <!-- Основной акцент -->
+        <!-- Primary accent -->
         <item name="colorPrimary">@color/dark_primary</item>
         <item name="colorPrimaryVariant">@color/dark_primary_variant</item>
         <item name="colorOnPrimary">@color/dark_on_primary</item>
 
-        <!-- Второй акцент -->
+        <!-- Secondary accent -->
         <item name="colorSecondary">@color/dark_secondary</item>
         <item name="colorSecondaryVariant">@color/dark_secondary</item>
         <item name="colorOnSecondary">@color/black</item>
 
-        <!-- Фоны / поверхности -->
+        <!-- Backgrounds / surfaces -->
         <item name="android:windowBackground">@color/dark_background</item>
         <item name="colorSurface">@color/dark_surface</item>
         <item name="colorOnSurface">@color/dark_text_primary</item>
         <item name="android:colorBackground">@color/dark_background</item>
 
-        <!-- Текст -->
+        <!-- Text -->
         <item name="android:textColorPrimary">@color/dark_text_primary</item>
         <item name="android:textColorSecondary">@color/dark_text_secondary</item>
         <item name="android:textColorHint">@color/dark_text_hint</item>
 
-        <!-- Статус-бар / навигация -->
+        <!-- Status / navigation bar -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/dark_background</item>
         <item name="android:navigationBarColor" tools:targetApi="l">@color/dark_background</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
 
-        <!-- Стили кнопок по умолчанию -->
+        <!-- Default button style -->
         <item name="materialButtonStyle">@style/Widget.App.Button</item>
     </style>
 
-    <!-- Тема для прозрачного диалогового Activity -->
+    <!-- Theme for the translucent dialog Activity -->
     <style name="Theme.Notifications.Dialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/dark_primary</item>
         <item name="colorPrimaryVariant">@color/dark_primary_variant</item>
@@ -44,7 +44,7 @@
         <item name="android:windowBackground">@drawable/bg_dialog</item>
     </style>
 
-    <!-- Стиль основной кнопки -->
+    <!-- Primary button style -->
     <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button">
         <item name="backgroundTint">@color/dark_primary</item>
         <item name="android:textColor">@color/dark_on_primary</item>
@@ -53,15 +53,51 @@
         <item name="android:letterSpacing">0.02</item>
     </style>
 
-    <!-- Кнопка-опасность (Нет/Отменить) -->
+    <!-- Danger button (No / Cancel) -->
     <style name="Widget.App.Button.Danger" parent="Widget.App.Button">
         <item name="backgroundTint">@color/dark_danger</item>
         <item name="android:textColor">@color/black</item>
     </style>
 
-    <!-- Нейтральная кнопка -->
+    <!-- Neutral button -->
     <style name="Widget.App.Button.Neutral" parent="Widget.App.Button">
         <item name="backgroundTint">@color/dark_neutral</item>
         <item name="android:textColor">@color/dark_text_primary</item>
+    </style>
+
+    <!--
+        Tile in the bottom-sheet menus.
+        Each tile is an equally-weighted column inside a 3-column GridLayout,
+        clickable, with a ripple foreground for tap feedback.
+    -->
+    <style name="MenuTile">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_gravity">fill_horizontal</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="MenuTileIcon">
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+        <item name="android:tint">@color/dark_text_primary</item>
+        <item name="android:contentDescription">@null</item>
+    </style>
+
+    <style name="MenuTileLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/dark_text_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
     </style>
 </resources>

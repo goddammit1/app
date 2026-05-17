@@ -47,6 +47,10 @@
             android:name=".AlertDetailActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
         <service
             android:name=".InboxService"
             android:exported="false"

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Profile screen.
+
+    Sections (top to bottom):
+        - Big circular avatar (tap = pick, long-press = remove).
+        - Display name editor + Save button.
+        - Change password block (old / new / confirm) + Save button.
+        - Account: Delete account button.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_root"
+    android:fillViewport="true"
+    tools:context=".ProfileActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_title"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Avatar -->
+        <FrameLayout
+            android:id="@+id/avatarContainer"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_avatar_circle"
+            android:clipToOutline="true">
+
+            <ImageView
+                android:id="@+id/avatarImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null" />
+
+            <ImageView
+                android:id="@+id/avatarPlaceholder"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_person_placeholder"
+                app:tint="@color/text_secondary"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_avatar_hint"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="28dp" />
+
+        <!-- Display name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_display_name"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etDisplayName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/profile_display_name_hint"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/dark_text_hint"
+            android:background="@drawable/bg_edit_text"
+            android:padding="16dp"
+            android:minHeight="52dp"
+            android:inputType="text" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveName"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/profile_save_name" />
+
+        <!-- Change password -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_change_password"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/etOldPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/profile_old_password"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/dark_text_hint"
+            android:background="@drawable/bg_edit_text"
+            android:padding="16dp"
+            android:minHeight="52dp"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/etNewPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/profile_new_password"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/dark_text_hint"
+            android:background="@drawable/bg_edit_text"
+            android:padding="16dp"
+            android:minHeight="52dp"
+            android:layout_marginTop="8dp"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/etNewPasswordConfirm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/profile_new_password_confirm"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/dark_text_hint"
+            android:background="@drawable/bg_edit_text"
+            android:padding="16dp"
+            android:minHeight="52dp"
+            android:layout_marginTop="8dp"
+            android:inputType="textPassword" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSavePassword"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/profile_save_password" />
+
+        <!-- Delete account -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteAccount"
+            style="@style/Widget.App.Button.Danger"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:text="@string/profile_delete_account" />
+
+    </LinearLayout>
+</ScrollView>

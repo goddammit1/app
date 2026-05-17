@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outlined pill: transparent fill, 2dp white border. Used for the "Send" tile. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <stroke android:width="2dp" android:color="@color/accent_white" />
+    <corners android:radius="28dp" />
+</shape>

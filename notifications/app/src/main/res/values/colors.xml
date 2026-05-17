@@ -34,4 +34,18 @@
     <color name="status_not_ready_fg">#FFEF5350</color> <!-- bright red text -->
     <color name="status_pending_bg">#1F9E9E9E</color>   <!-- translucent grey -->
     <color name="status_pending_fg">#FFBDBDBD</color>   <!-- soft grey text -->
+
+    <!-- New "neon dark" UI palette used on the redesigned main screen -->
+    <color name="bg_root">#000000</color>             <!-- deep black -->
+    <color name="bg_panel">#171717</color>            <!-- status panel / sheet -->
+    <color name="bg_panel_high">#1E1E1E</color>       <!-- slightly lighter -->
+    <color name="bg_tile">#222222</color>             <!-- pill / tile background -->
+    <color name="bg_slot_idle">#262626</color>        <!-- empty status slot -->
+    <color name="accent_white">#FFFFFFFF</color>      <!-- neon highlight -->
+    <color name="accent_white_dim">#33FFFFFF</color>  <!-- soft white glow -->
+    <color name="accent_red">#FFFF4D4F</color>        <!-- "not ready" outline -->
+    <color name="accent_red_dim">#33FF4D4F</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#FF8E8E8E</color>
+    <color name="timer_track">#1FFFFFFF</color>       <!-- subtle track behind progress -->
 </resources>

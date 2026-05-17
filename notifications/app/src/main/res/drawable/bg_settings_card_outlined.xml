@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Big "hero" card used for the profile block in the Settings sheet.
+    Dark tile background + thin white stroke to mark it as the primary
+    card on the screen (same visual language as the outlined Send tile
+    on the main menu).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_tile" />
+    <corners android:radius="26dp" />
+    <stroke android:width="1.5dp" android:color="@color/accent_white" />
+</shape>

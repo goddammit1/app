@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Plain permission card (no border). Used in the masonry grid below
+    the profile card on the Settings sheet. Slightly larger corner
+    radius than menu pills so it reads as a "card" rather than a "pill".
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_tile" />
+    <corners android:radius="22dp" />
+</shape>

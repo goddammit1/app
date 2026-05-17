@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Ready" overlay ring used as the foreground of a status slot so the
+    coloured border stays visible on top of any avatar image.
+
+    Just a plain 2dp white stroke - no halo. The previous layer-list
+    drew a translucent halo behind the stroke which, combined with the
+    parent's clipToOutline=true, was rendered as an ugly second border
+    around the avatar.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <stroke android:width="2dp" android:color="@color/accent_white" />
+    <corners android:radius="12dp" />
+</shape>

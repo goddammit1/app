@@ -9,7 +9,12 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 public class DialogActivity extends AppCompatActivity {
     @Override
@@ -53,20 +58,39 @@ public class DialogActivity extends AppCompatActivity {
         });
     }
 
-    private void handleAnswer(String alertId, SessionManager session, boolean ready) {
-        if (alertId != null && session.isLoggedIn()) {
-            RemoteUsers.postResponse(alertId, session.getLogin(), ready);
-        }
+    private void handleAnswer(final String alertId, final SessionManager session,
+                              final boolean ready) {
+        // Always tear the alarm down first, regardless of bookkeeping.
         MyFirebaseMessagingService.stopAll(this);
-        // Open report screen for this alert (skip if no alertId, e.g. legacy FCM)
-        if (alertId != null && !alertId.isEmpty()) {
-            try {
-                Intent i = new Intent(getApplicationContext(), AlertDetailActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                i.putExtra(AlertDetailActivity.EXTRA_ALERT_ID, alertId);
-                startActivity(i);
-            } catch (Exception ignored) {}
+
+        if (!session.isLoggedIn() || alertId == null || alertId.isEmpty()) {
+            finish();
+            return;
         }
-        finish();
+        final String me = session.getLogin();
+
+        // Per-alert response goes into history regardless of selfTest.
+        RemoteUsers.postResponse(alertId, me, ready);
+
+        // The persistent status node must NOT be written for self-test
+        // alerts: those are a diagnostic feature and should leave the
+        // user's real "ready / not ready" untouched. Resolve the alert's
+        // selfTest flag from RTDB before deciding.
+        RemoteUsers.alertsRef().child(alertId).child("selfTest")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override public void onDataChange(@NonNull DataSnapshot snap) {
+                        Boolean st = snap.getValue(Boolean.class);
+                        if (!Boolean.TRUE.equals(st)) {
+                            RemoteUsers.setStatus(me, ready);
+                        }
+                        finish();
+                    }
+                    @Override public void onCancelled(@NonNull DatabaseError error) {
+                        // If we cannot check, err on the safe side and
+                        // skip the status write so a self-test never
+                        // poisons real-world readiness.
+                        finish();
+                    }
+                });
     }
 }

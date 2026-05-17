@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Not ready" slot: dark base + thin red outline (no glow halo, so it
+    reads clearly as a negative state).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_slot_idle" />
+    <stroke android:width="2dp" android:color="@color/accent_red" />
+    <corners android:radius="12dp" />
+</shape>

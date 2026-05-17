@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Footer panel at the bottom of the Settings sheet. Slightly lighter
+    than the sheet background, with the same rounded geometry as the
+    primary tiles, so the footer reads as a distinct "back" surface.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_tile" />
+    <corners android:radius="22dp" />
+</shape>

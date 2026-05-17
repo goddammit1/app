@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Small overlay drawn on top of a status slot when the slot represents
+    the current user. A white dot in the top-right corner is enough to
+    identify "me" without disturbing the slot's own state colour.
+
+    Replaces the old "self-ring" (a second inner border) which looked
+    visually cluttered. A single bigger (8dp) solid dot is much more
+    legible and does not fight with the outer status ring.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:gravity="top|end"
+        android:width="8dp"
+        android:height="8dp"
+        android:top="6dp"
+        android:right="6dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/accent_white" />
+        </shape>
+    </item>
+</layer-list>

@@ -53,9 +53,11 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         btnLogin.setEnabled(false);
+        BusyOverlay.show(this, "Signing in...");
         RemoteUsers.loginRemote(login, password, new RemoteUsers.AuthCallback() {
             @Override
             public void onSuccess(String login) {
+                BusyOverlay.hide(LoginActivity.this);
                 session.login(login);
                 InboxService.start(getApplicationContext());
                 Toast.makeText(LoginActivity.this,
@@ -65,6 +67,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                BusyOverlay.hide(LoginActivity.this);
                 btnLogin.setEnabled(true);
                 Toast.makeText(LoginActivity.this,
                         message != null ? message : "Login failed",

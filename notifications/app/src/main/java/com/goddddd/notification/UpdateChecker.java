@@ -52,6 +52,26 @@ public final class UpdateChecker {
     private UpdateChecker() {}
 
     public static void checkAsync(final Activity activity) {
+        checkInternal(activity, /*force=*/false);
+    }
+
+    /**
+     * Manually triggered update check (e.g. tapped "Updates" tile in the
+     * Settings sheet). Unlike {@link #checkAsync(Activity)} this:
+     *   * ignores the 1-minute rate limit,
+     *   * ignores the user's "skip this version" choice (since the
+     *     user explicitly asked),
+     *   * surfaces feedback even when there is nothing to do, via the
+     *     Toast {@code R.string.settings_updates_up_to_date}.
+     *
+     * Network and JSON parsing still happen on a background thread; UI
+     * is touched only via the main looper.
+     */
+    public static void forceCheckAsync(final Activity activity) {
+        checkInternal(activity, /*force=*/true);
+    }
+
+    private static void checkInternal(final Activity activity, final boolean force) {
         if (activity == null) return;
         final Context appCtx = activity.getApplicationContext();
         final SharedPreferences prefs =
@@ -59,24 +79,54 @@ public final class UpdateChecker {
 
         long now = System.currentTimeMillis();
         long last = prefs.getLong(KEY_LAST_CHECK, 0);
-        if (now - last < MIN_CHECK_INTERVAL_MS) return;
+        if (!force && now - last < MIN_CHECK_INTERVAL_MS) return;
         prefs.edit().putLong(KEY_LAST_CHECK, now).apply();
+
+        if (force) {
+            Toast.makeText(activity, "Checking for updates...",
+                    Toast.LENGTH_SHORT).show();
+        }
 
         new Thread(() -> {
             try {
                 ReleaseInfo info = fetchLatest();
-                if (info == null || info.tagName == null || info.apkUrl == null) return;
-
                 String currentVer = currentVersionName(appCtx);
-                if (!isNewer(info.tagName, currentVer)) return;
 
-                String skipped = prefs.getString(KEY_SKIPPED, null);
-                if (info.tagName.equalsIgnoreCase(skipped)) return;
+                boolean hasUpdate = info != null
+                        && info.tagName != null
+                        && info.apkUrl != null
+                        && isNewer(info.tagName, currentVer);
 
-                new Handler(Looper.getMainLooper()).post(() ->
-                        showDialog(activity, info));
+                // "Skip this version" only suppresses the silent (auto)
+                // check. If the user explicitly tapped "Updates", we
+                // honour their request and show the dialog anyway.
+                if (hasUpdate && !force) {
+                    String skipped = prefs.getString(KEY_SKIPPED, null);
+                    if (info.tagName.equalsIgnoreCase(skipped)) hasUpdate = false;
+                }
+
+                final boolean willPrompt = hasUpdate;
+                final ReleaseInfo finalInfo = info;
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    if (willPrompt) {
+                        showDialog(activity, finalInfo);
+                    } else if (force) {
+                        // Explicit check, no newer version available:
+                        // tell the user so they know the check actually
+                        // ran (silent check would just go quiet here).
+                        Toast.makeText(activity,
+                                R.string.settings_updates_up_to_date,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             } catch (Throwable t) {
                 Log.e(TAG, "check failed", t);
+                if (force) {
+                    new Handler(Looper.getMainLooper()).post(() ->
+                            Toast.makeText(activity,
+                                    "Update check failed: " + t.getMessage(),
+                                    Toast.LENGTH_LONG).show());
+                }
             }
         }).start();
     }

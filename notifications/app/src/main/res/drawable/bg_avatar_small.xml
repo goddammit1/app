@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Background used behind a small list avatar (UsersListActivity).
+    Same look as the main profile avatar but smaller, just a dark
+    circle so the placeholder silhouette is readable.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/bg_slot_idle" />
+</shape>

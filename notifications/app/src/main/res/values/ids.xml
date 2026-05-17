@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    IDs referenced from code-only views (e.g. BusyOverlay which inflates
+    its UI in Java). Keeping them here keeps the IDs stable across
+    builds without needing a placeholder layout.
+-->
+<resources>
+    <item name="tag_busy_overlay" type="id" />
+    <item name="busy_overlay_root" type="id" />
+    <item name="busy_overlay_text" type="id" />
+</resources>

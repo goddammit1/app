@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Small round chip used for the "edit" pencil button in the corner of
+    the profile card. Solid darker tile so the white pencil icon pops.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/bg_panel_high" />
+</shape>

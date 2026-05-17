@@ -1,14 +1,18 @@
 package com.goddddd.notification;
 
 import android.content.Intent;
-import android.graphics.drawable.GradientDrawable;
+import android.graphics.Bitmap;
+import android.graphics.Outline;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -17,17 +21,17 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Pick-recipient screen. Shows each user with an online / offline indicator.
+ * Pick-recipient / Online-users screen.
  *
- * In view-only mode the user is just browsing the list:
- *  - taps do nothing,
- *  - the user themselves IS shown in the list,
- *  - a long-press on the user's own row offers to delete the account.
+ * Each row is: [avatar (with online dot)] [display name] [Online/Offline].
+ * When the row's user has no avatar, a generic silhouette is rendered;
+ * the online dot is anchored to the avatar's bottom-right corner.
  */
 public class UsersListActivity extends AppCompatActivity {
 
@@ -65,7 +69,7 @@ public class UsersListActivity extends AppCompatActivity {
         if (viewOnly) {
             setTitle("Online users");
             if (hintText != null) {
-                hintText.setText("Green = in app, grey = offline. Long-press yourself to delete account.");
+                hintText.setText("Green dot = online. Grey = offline.");
             }
         }
 
@@ -74,21 +78,8 @@ public class UsersListActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             RemoteUsers.UserInfo u = users.get(position);
-            if (viewOnly) return; // no action in view-only mode
-            // In "pick recipient" mode we never include the current user, so just send.
+            if (viewOnly) return;
             askMessageAndSend(u.login);
-        });
-
-        // Long-press to delete account (only on your own row, only in view-only mode).
-        listView.setOnItemLongClickListener((parent, view, position, id) -> {
-            if (!viewOnly) return false;
-            RemoteUsers.UserInfo u = users.get(position);
-            String me = session.getLogin();
-            if (u.login != null && u.login.equalsIgnoreCase(me)) {
-                confirmDeleteAccount();
-                return true;
-            }
-            return false;
         });
 
         loadUsers();
@@ -111,14 +102,13 @@ public class UsersListActivity extends AppCompatActivity {
                 String me = session.getLogin();
                 for (RemoteUsers.UserInfo u : result) {
                     if (u.login == null) continue;
-                    // In pick-recipient mode skip self; in view-only mode include self.
                     if (!viewOnly && u.login.equalsIgnoreCase(me)) continue;
                     users.add(u);
                 }
                 java.util.Collections.sort(users, (a, b) -> {
                     if (a.online != b.online) return a.online ? -1 : 1;
-                    String an = a.login != null ? a.login : "";
-                    String bn = b.login != null ? b.login : "";
+                    String an = displayLabel(a);
+                    String bn = displayLabel(b);
                     return an.compareToIgnoreCase(bn);
                 });
                 adapter.notifyDataSetChanged();
@@ -132,6 +122,14 @@ public class UsersListActivity extends AppCompatActivity {
                         "Load error: " + message, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private static String displayLabel(RemoteUsers.UserInfo u) {
+        if (u == null) return "";
+        if (u.displayName != null && !u.displayName.trim().isEmpty()) {
+            return u.displayName.trim();
+        }
+        return u.login != null ? u.login : "";
     }
 
     private void askMessageAndSend(String recipient) {
@@ -170,41 +168,7 @@ public class UsersListActivity extends AppCompatActivity {
         });
     }
 
-    private void confirmDeleteAccount() {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete account")
-                .setMessage("This will delete your account and all alerts you have sent. "
-                        + "You will be signed out. Continue?")
-                .setPositiveButton("Delete", (d, w) -> doDeleteAccount())
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void doDeleteAccount() {
-        final String me = session.getLogin();
-        if (me == null) return;
-        RemoteUsers.deleteAccount(me, new RemoteUsers.SimpleCallback() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(UsersListActivity.this,
-                        "Account deleted", Toast.LENGTH_SHORT).show();
-                InboxService.stop(getApplicationContext());
-                session.logout();
-                Intent i = new Intent(UsersListActivity.this, LoginActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(i);
-                finish();
-            }
-
-            @Override
-            public void onError(String message) {
-                Toast.makeText(UsersListActivity.this,
-                        "Delete error: " + message, Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    // ---------- Adapter with online/offline indicator ----------
+    // ---------- Adapter ----------
 
     private class UserAdapter extends BaseAdapter {
         @Override public int getCount() { return users.size(); }
@@ -215,64 +179,165 @@ public class UsersListActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             RemoteUsers.UserInfo u = users.get(position);
 
-            LinearLayout row;
-            TextView dot;
-            TextView name;
-            TextView status;
-
-            if (convertView instanceof LinearLayout) {
-                row = (LinearLayout) convertView;
-                dot = (TextView) row.getChildAt(0);
-                name = (TextView) row.getChildAt(1);
-                status = (TextView) row.getChildAt(2);
+            ViewHolder h;
+            if (convertView != null && convertView.getTag() instanceof ViewHolder) {
+                h = (ViewHolder) convertView.getTag();
             } else {
-                row = new LinearLayout(UsersListActivity.this);
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                row.setGravity(Gravity.CENTER_VERTICAL);
-                int padPx = (int) (16 * getResources().getDisplayMetrics().density);
-                row.setPadding(padPx, padPx, padPx, padPx);
-
-                dot = new TextView(UsersListActivity.this);
-                int dotSize = (int) (10 * getResources().getDisplayMetrics().density);
-                LinearLayout.LayoutParams dotLp = new LinearLayout.LayoutParams(dotSize, dotSize);
-                dotLp.rightMargin = (int) (12 * getResources().getDisplayMetrics().density);
-                dot.setLayoutParams(dotLp);
-                row.addView(dot);
-
-                name = new TextView(UsersListActivity.this);
-                LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(
-                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-                name.setLayoutParams(nameLp);
-                name.setTextSize(16);
-                name.setTextColor(getResources().getColor(R.color.dark_text_primary));
-                row.addView(name);
-
-                status = new TextView(UsersListActivity.this);
-                status.setTextSize(12);
-                row.addView(status);
+                convertView = buildRow();
+                h = (ViewHolder) convertView.getTag();
             }
 
+            String label = displayLabel(u);
             String me = session.getLogin();
             boolean isMe = u.login != null && u.login.equalsIgnoreCase(me);
-            name.setText(isMe ? u.login + "  (you)" : u.login);
+            h.name.setText(isMe ? label + "  (you)" : label);
 
             if (u.online) {
-                paintDot(dot, getResources().getColor(R.color.status_ready_fg));
-                status.setText("Online");
-                status.setTextColor(getResources().getColor(R.color.status_ready_fg));
+                h.onlineDot.setVisibility(View.VISIBLE);
+                h.status.setText("Online");
+                h.status.setTextColor(getResources().getColor(R.color.status_ready_fg));
             } else {
-                paintDot(dot, getResources().getColor(R.color.status_pending_fg));
-                status.setText("Offline");
-                status.setTextColor(getResources().getColor(R.color.status_pending_fg));
+                h.onlineDot.setVisibility(View.GONE);
+                h.status.setText("Offline");
+                h.status.setTextColor(getResources().getColor(R.color.status_pending_fg));
             }
-            return row;
+
+            // Avatar: placeholder first, then async load if the user has one.
+            final String login = u.login;
+            h.avatarPlaceholder.setVisibility(View.VISIBLE);
+            h.avatarImage.setImageDrawable(null);
+            h.avatarImage.setVisibility(View.GONE);
+            h.avatarImage.setTag(login);
+
+            if (u.hasAvatar && u.avatarTs > 0 && login != null) {
+                AvatarCache.request(login, u.avatarTs, bm -> {
+                    if (!login.equals(h.avatarImage.getTag())) return;
+                    if (bm != null) {
+                        h.avatarImage.setImageBitmap(bm);
+                        h.avatarImage.setVisibility(View.VISIBLE);
+                        h.avatarPlaceholder.setVisibility(View.GONE);
+                    }
+                });
+            }
+
+            return convertView;
         }
 
-        private void paintDot(TextView dot, int colorInt) {
-            GradientDrawable bg = new GradientDrawable();
-            bg.setShape(GradientDrawable.OVAL);
-            bg.setColor(colorInt);
-            dot.setBackground(bg);
+        /** Builds the row view tree once and stashes a ViewHolder on it. */
+        private View buildRow() {
+            float d = getResources().getDisplayMetrics().density;
+            int pad = (int) (16 * d);
+            int gap = (int) (12 * d);
+            int avatarSize = (int) (40 * d);
+            int dotSize = (int) (12 * d);
+
+            LinearLayout row = new LinearLayout(UsersListActivity.this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(pad, pad, pad, pad);
+            // The online dot deliberately overflows the avatar circle
+            // (Discord-style). Both the row and the avatar container must
+            // allow children to draw outside their own bounds, otherwise
+            // the dot gets clipped at the avatar's right/bottom edge.
+            row.setClipChildren(false);
+            row.setClipToPadding(false);
+
+            // Avatar container (circle background + image + placeholder + online dot).
+            //
+            // Important: the container itself is NOT clipped. If we clipped
+            // the FrameLayout (clipToOutline=true), every child - including
+            // the online status dot - would be cut off at the avatar's
+            // rounded edge, and the dot couldn't "stick out" of the circle
+            // Discord-style. Instead we clip just the inner ImageView to a
+            // circle, so the bitmap stays round while the dot is free to
+            // overflow.
+            FrameLayout avatarBox = new FrameLayout(UsersListActivity.this);
+            LinearLayout.LayoutParams boxLp =
+                    new LinearLayout.LayoutParams(avatarSize, avatarSize);
+            boxLp.rightMargin = gap;
+            avatarBox.setLayoutParams(boxLp);
+            avatarBox.setBackground(ContextCompat.getDrawable(
+                    UsersListActivity.this, R.drawable.bg_avatar_small));
+            // Make sure children that draw outside the box (the online dot)
+            // are not clipped by the FrameLayout's own bounds either.
+            avatarBox.setClipChildren(false);
+            avatarBox.setClipToPadding(false);
+
+            ImageView avatarImage = new ImageView(UsersListActivity.this);
+            avatarImage.setLayoutParams(new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT));
+            avatarImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            avatarImage.setVisibility(View.GONE);
+            // Circular clip on the ImageView only - the bitmap stays round
+            // without affecting siblings.
+            avatarImage.setOutlineProvider(new ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    outline.setOval(0, 0, view.getWidth(), view.getHeight());
+                }
+            });
+            avatarImage.setClipToOutline(true);
+            avatarBox.addView(avatarImage);
+
+            ImageView avatarPlaceholder = new ImageView(UsersListActivity.this);
+            int phSize = (int) (24 * d);
+            FrameLayout.LayoutParams phLp =
+                    new FrameLayout.LayoutParams(phSize, phSize);
+            phLp.gravity = Gravity.CENTER;
+            avatarPlaceholder.setLayoutParams(phLp);
+            avatarPlaceholder.setImageResource(R.drawable.ic_person_placeholder);
+            avatarBox.addView(avatarPlaceholder);
+
+            // Online dot anchored to the bottom-right of the avatar.
+            // It is allowed to overflow the avatar circle (Discord-style),
+            // because:
+            //   * avatarBox no longer clips its children;
+            //   * only the inner ImageView is clipped to a circle.
+            // No negative or positive margin is applied - the dot sits
+            // exactly at the bottom-right corner of the box, with roughly
+            // half of it spilling outside the circle.
+            View onlineDot = new View(UsersListActivity.this);
+            FrameLayout.LayoutParams dotLp =
+                    new FrameLayout.LayoutParams(dotSize, dotSize);
+            dotLp.gravity = Gravity.BOTTOM | Gravity.END;
+            onlineDot.setLayoutParams(dotLp);
+            onlineDot.setBackground(ContextCompat.getDrawable(
+                    UsersListActivity.this, R.drawable.bg_online_dot));
+            avatarBox.addView(onlineDot);
+
+            row.addView(avatarBox);
+
+            // Name (takes remaining space).
+            TextView name = new TextView(UsersListActivity.this);
+            LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            name.setLayoutParams(nameLp);
+            name.setTextSize(16);
+            name.setTextColor(getResources().getColor(R.color.dark_text_primary));
+            row.addView(name);
+
+            // Online / Offline label on the right.
+            TextView status = new TextView(UsersListActivity.this);
+            status.setTextSize(12);
+            row.addView(status);
+
+            ViewHolder h = new ViewHolder();
+            h.avatarImage = avatarImage;
+            h.avatarPlaceholder = avatarPlaceholder;
+            h.onlineDot = onlineDot;
+            h.name = name;
+            h.status = status;
+            row.setTag(h);
+            return row;
         }
+    }
+
+    private static class ViewHolder {
+        ImageView avatarImage;
+        ImageView avatarPlaceholder;
+        View onlineDot;
+        TextView name;
+        TextView status;
     }
 }

@@ -30,5 +30,10 @@ dump.hex
 package-lock.json
 node_modules/
 
+# Local design mocks / screenshots that are pasted into the working
+# tree during reviews. They're not source - keep them out of git.
+/image.png
+/image1.png
+
 # Release artifacts — distribute via GitHub Releases, not git
 *.apk
